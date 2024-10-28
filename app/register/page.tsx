@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -21,12 +20,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { FormProvider } from "react-hook-form";
 import { z } from "zod";
-
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(5, "Password must be at least 5 characters").max(50),
-  passwordConfirm: z.string(),
-});
+import { passwordMatchSchema } from "@/validation/passwordMatchSchema";
+import { registerUser } from "./action";
+const formSchema = z
+  .object({
+    email: z.string().email(),
+  })
+  .and(passwordMatchSchema);
 
 export default function RegisterPage() {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -38,7 +38,14 @@ export default function RegisterPage() {
     },
   });
 
-  const handleSubmit = () => {};
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    const response = await registerUser({
+      email: data.email,
+      password: data.password,
+      passwordConfirm: data.passwordConfirm,
+    });
+    console.log(response);
+  };
   return (
     <div>
       <main className="flex justify-center items-center min-h-screen">
@@ -88,7 +95,7 @@ export default function RegisterPage() {
                 {/* password confirm */}
                 <FormField
                   control={form.control}
-                  name="password"
+                  name="passwordConfirm"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Confirm Passowrd</FormLabel>
